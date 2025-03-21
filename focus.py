@@ -175,7 +175,7 @@ cv2.destroyAllWindows()
 # Convert to DataFrame
 df = pd.DataFrame(data, columns=["Eye Status","left eye looking ","right eye looking", "Yawn Status", "Head Pose"])
 
-# Save as CSV
+
 df.to_csv("concentration_data.csv", index=False)
 
 print("Data Saved!")

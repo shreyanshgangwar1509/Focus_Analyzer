@@ -83,7 +83,6 @@ def head_pose(landmarks):
         return "Left Look"
     if nose[1] > eye_avg_y + 60:
         return "Down Look"
-
     return "Forward Look"
 
 # Start Video Capture
@@ -164,7 +163,6 @@ while cap.isOpened():
                 data.append([eye_status,left_eye_pred,right_eye_pred, yawn_status, head_status])
                 start_time = time.time()
 
-
     cv2.imshow("Concentration Monitor", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
@@ -174,7 +172,6 @@ cv2.destroyAllWindows()
 
 # Convert to DataFrame
 df = pd.DataFrame(data, columns=["Eye Status","left eye looking ","right eye looking", "Yawn Status", "Head Pose"])
-
 
 df.to_csv("concentration_data.csv", index=False)
 

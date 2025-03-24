@@ -6,7 +6,7 @@ import {BrowserRouter, Routes, Route} from "react-router-dom";
 function App() {
 
   return (
-    <div style={{marginTop : '-3.5rem'}}>
+    <div >
       <BrowserRouter >
         <Routes>
           <Route path="/" element ={<Register/>} />

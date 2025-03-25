@@ -73,5 +73,5 @@ Feel free to open issues or submit pull requests to improve the model and add ne
 
 ---
 Developed with ❤️ by **Shreyansh Gangwar and Team**
-Developed by **Sparsh Gupta**
+Developed by **Sparsh Gupta** and **Sayali Chaudhari**
 

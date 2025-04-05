@@ -36,8 +36,6 @@ class_labels = {
     3: "left_look"
 }
 
-#for eyes modal loading 
-
 try:
     eye_model = keras.models.load_model("eye_model.h5")
     print("Model loaded successfully!")
@@ -57,11 +55,9 @@ def calculate_ear(eye_landmarks):
     ear = (vertical_1 + vertical_2) / (2.0 * horizontal)
     return ear
 
-# Extract Eye Landmarks
 def get_eye_landmarks(landmarks, eye_indices, frame_width, frame_height):
     return [(int(landmarks[idx].x * frame_width), int(landmarks[idx].y * frame_height)) for idx in eye_indices]
 
-# Calculate Mouth Aspect Ratio (MAR) for yawning detection
 def calculate_mar(landmarks):
     A = np.linalg.norm(landmarks[1] - landmarks[5])  # Upper-Lower Lip Distance
     B = np.linalg.norm(landmarks[2] - landmarks[4])

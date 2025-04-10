@@ -8,6 +8,8 @@ import Session from './models/Session.model.js';
 const app = express();
 app.use(express.json());
 app.use(cors());
+const JWT_SECRET = "HI";
+
 
 mongoose.connect('mongodb://127.0.0.1:27017/focus_analyzer');
 
@@ -38,7 +40,8 @@ app.post('/login', async (req, res) => {
 
         if (user) {
             if (user.password == password) {
-                const token = jwt.sign({ email: user.email }, "HI", { expiresIn: '10h' });
+
+                const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: '10h' });
                 
                 res.json({
                     message: "Success",
@@ -68,7 +71,7 @@ app.post("/save_results", async (req, res) => {
       email,
       results,
     });
-
+    // console.log(session);
     await session.save();
     res.status(201).json({ message: "Session saved successfully." });
   } catch (err) {
@@ -78,6 +81,17 @@ app.post("/save_results", async (req, res) => {
 });
 
 
+app.get('/sessions', async (req, res) => {
+    try {
+        const sessions = await Session.find({ email: "abcd@gmail.com" });
+        console.log("request came ");
+        res.json({ sessions });
+    } catch (err) {
+        // console.error('JWT verification error:', err);
+        res.status(403).json({ message: 'Forbidden: Invalid token' });
+    }
+});
+
 app.listen(3001, () => {
-    console.log("Server listining on http://127.0.0.1:3001");
+    console.log("Server listining on localhost - :3001");
 });

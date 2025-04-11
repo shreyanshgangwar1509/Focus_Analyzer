@@ -5,7 +5,7 @@ const HomePage = () => {
   return (
     <div className="container">
       <header>
-        <h1>Real-Time Eye Movement & Yawn Detection</h1>
+        <h1>Focus Analyzer</h1>
       </header>
 
       <section className="overview">

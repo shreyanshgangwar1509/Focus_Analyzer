@@ -1,69 +1,81 @@
 import React from "react";
-import "./css/Home.css"; // Import CSS file for styling
-
+import "./css/Home.css"; // You can keep this for custom overrides
+import { useNavigate } from "react-router-dom"; 
 const HomePage = () => {
+  const navigate = useNavigate();
   return (
-    <div className="container">
-      <header>
-        <h1>Focus Analyzer</h1>
+    <div className="container py-5">
+      <header className="text-center mb-5">
+        <h1 className="display-4 text-primary fw-bold">Focus Analyzer</h1>
+        <p className="lead text-muted">
+          Real-time eye movement and yawn detection system using OpenCV & TensorFlow
+        </p>
       </header>
-
-      <section className="overview">
-        <h2>📌 Overview</h2>
+      <div className="text-center mt-5">
+        <button
+          className="btn btn-lg btn-primary px-5 py-2 shadow"
+          onClick={() => navigate("/concentration")}
+        >
+          🔎 Analyze Focus Now
+        </button>
+      </div>
+      {/* Overview */}
+      <section className="mb-5">
+        <h2 className="h4 mb-3">📌 Overview</h2>
         <p>
-          This project is a real-time eye movement and yawn detection system
-          using OpenCV, TensorFlow/Keras, and Haar cascade classifiers. It
-          processes live video from a webcam to detect eye states and yawning
-          behavior, helping in applications like drowsiness detection, driver
-          safety, and human-computer interaction.
+          This project is a real-time eye movement and yawn detection system using OpenCV, TensorFlow/Keras, 
+          and Haar cascade classifiers. It processes live video from a webcam to detect eye states and yawning 
+          behavior, helping in applications like drowsiness detection, driver safety, and human-computer interaction.
         </p>
       </section>
 
-      <section className="features">
-        <h2>✨ Features</h2>
-        <ul>
-          <li>🚀 Real-time detection of eye movements and yawning.</li>
-          <li>
+      {/* Features */}
+      <section className="mb-5">
+        <h2 className="h4 mb-3">✨ Features</h2>
+        <ul className="list-group list-group-flush">
+          <li className="list-group-item">🚀 Real-time detection of eye movements and yawning.</li>
+          <li className="list-group-item">
             🎯 Classifies eye movements into:
-            <ul>
+            <ul className="ms-4 mt-2">
               <li>Forward Look</li>
               <li>Close Look</li>
               <li>Right Look</li>
               <li>Left Look</li>
             </ul>
           </li>
-          <li>💤 Detects yawning (Yawn / No Yawn).</li>
-          <li>📸 Uses Haar cascade classifiers for face and eye detection.</li>
+          <li className="list-group-item">💤 Detects yawning (Yawn / No Yawn).</li>
+          <li className="list-group-item">📸 Uses Haar cascade classifiers for face and eye detection.</li>
         </ul>
       </section>
 
-      <section className="requirements">
-        <h2>📦 Requirements</h2>
+      {/* Requirements */}
+      <section className="mb-5">
+        <h2 className="h4 mb-3">📦 Requirements</h2>
         <p>Make sure you have the following dependencies installed:</p>
-        <code>pip install opencv-python numpy tensorflow keras</code>
-      </section>
-
-      <section className="installation">
-        <h2>🚀 Installation & Setup</h2>
-        <pre>
-          <code>
-            git clone &lt;repo-url&gt; <br />
-            cd &lt;project-folder&gt; <br />
-            <br />
-            # Ensure models are present: <br />
-            eye_model.h5 (for eye movement detection) <br />
-            yawn_model.h5 (for yawn detection) <br />
-            <br />
-            # Run the script: <br />
-            python focus.py <br />
-            Press 'q' to exit the detection window.
-          </code>
+        <pre className="bg-light p-3 rounded">
+          pip install opencv-python numpy tensorflow keras
         </pre>
       </section>
 
-      <section className="working">
-        <h2>🛠 How It Works</h2>
-        <ol>
+      {/* Installation */}
+      <section className="mb-5">
+        <h2 className="h4 mb-3">🚀 Installation & Setup</h2>
+        <pre className="bg-light p-3 rounded">
+          git clone &lt;repo-url&gt;{"\n"}
+          cd &lt;project-folder&gt;{"\n\n"}
+          # Ensure models are present:{"\n"}
+          eye_model.h5 (for eye movement detection){"\n"}
+          yawn_model.h5 (for yawn detection){"\n\n"}
+          # Run the script:{"\n"}
+          python focus.py{"\n"}
+          Press 'q' to exit the detection window.
+        </pre>
+      </section>
+
+      {/* How it works */}
+      <section className="mb-5">
+        <h2 className="h4 mb-3">🛠 How It Works</h2>
+        <ol className="ps-3">
           <li>Captures live video from the webcam.</li>
           <li>Converts frames to grayscale for processing.</li>
           <li>Detects faces and eyes using Haar cascade classifiers.</li>
@@ -73,18 +85,23 @@ const HomePage = () => {
         </ol>
       </section>
 
-      <section className="models">
-        <h2>🔍 Model Details</h2>
-        <h3>Eye Detection Model (eye_model.h5)</h3>
-        <p>Trained to classify eye movement directions.</p>
-        <p>Input size: (120, 120, 3).</p>
+      {/* Model details */}
+      <section className="mb-3">
+        <h2 className="h4 mb-3">🔍 Model Details</h2>
+        <div className="mb-3">
+          <h5 className="text-primary">Eye Detection Model (eye_model.h5)</h5>
+          <p>Trained to classify eye movement directions.</p>
+          <p><strong>Input size:</strong> 120x120x3</p>
+        </div>
 
-        <h3>Yawn Detection Model (yawn_model.h5)</h3>
-        <p>Trained to detect whether a person is yawning or not.</p>
-        <p>Input size: (145, 145, 3).</p>
+        <div>
+          <h5 className="text-primary">Yawn Detection Model (yawn_model.h5)</h5>
+          <p>Trained to detect whether a person is yawning or not.</p>
+          <p><strong>Input size:</strong> 145x145x3</p>
+        </div>
       </section>
     </div>
   );
 };
 
-export default HomePage;
+export default HomePage;

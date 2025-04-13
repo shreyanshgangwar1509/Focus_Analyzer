@@ -1,107 +1,22 @@
-// import axios from "axios";
-// import { useEffect, useRef, useState } from "react";
-// import Webcam from "react-webcam";
-
-// export default function CameraCapture() {
-//   const webcamRef = useRef(null);
-//   const [result, setResult] = useState(null);
-//   const [isCapturing, setIsCapturing] = useState(false);
-
-//   const capture = async () => {
-//     if (!webcamRef.current) return;
-//     const imageSrc = webcamRef.current.getScreenshot();
-//     if (!imageSrc) return;
-
-//     try {
-//       const res = await axios.post("http://localhost:5000/predict", {
-//         image: imageSrc,
-//       });
-//       setResult(res.data.result);
-//     } catch (error) {
-//       console.error("Error capturing image:", error);
-//     }
-//   };
-
-//   useEffect(() => {
-//     let intervalId;
-
-//     if (isCapturing) {
-//       intervalId = setInterval(() => {
-//         capture();
-//       }, 1000);
-//     }
-
-//     return () => {
-//       if (intervalId) clearInterval(intervalId);
-//     };
-//   }, [isCapturing]);
-
-//   return (
-//     <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
-//       <div>
-//         <Webcam
-//           audio={false}
-//           ref={webcamRef}
-//           screenshotFormat="image/jpeg"
-//           width={640}
-//           height={480}
-//         />
-//         <button
-//           type="button"
-//           onClick={(e) => { e.preventDefault(); setIsCapturing(prev => !prev);  setResult(null); }}
-//           style={{
-//             marginTop: "10px",
-//             padding: "10px 20px",
-//             backgroundColor: isCapturing ? "#e74c3c" : "#2ecc71",
-//             color: "white",
-//             border: "none",
-//             borderRadius: "5px",
-//             cursor: "pointer",
-//           }}
-//         >
-//           {isCapturing ? "Stop Capturing" : "Start Capturing"}
-//         </button>
-//       </div>
-
-//       <div style={{ maxWidth: "400px" }}>
-//         <h3>Prediction Result:</h3>
-//         {(result) ? (
-//           <ul>
-//             <li>Eye Status: {result.eye_status}</li>
-//             <li>Focus: {result.focus}</li>
-//             <li>Head Pose: {result.head_pose}</li>
-//             <li>Left Eye: {result.left_eye}</li>
-//             <li>Right Eye: {result.right_eye}</li>
-//             <li>Yawn Status: {result.yawn_status}</li>
-//           </ul>
-//         ) : result ? (
-//           <p>{result}</p>
-//         ) : (
-//           <p>No data yet.</p>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
+import { useNavigate } from "react-router-dom";
+import "./css/CameraCapture.css"; // Importing custom styles
 
 export default function CameraCapture() {
   const webcamRef = useRef(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [resultsList, setResultsList] = useState([]);
   const [lastResult, setLastResult] = useState(null);
-    const [email, setEmail] = useState("");
-  
-    useEffect(() => {
-      const storedEmail = localStorage.getItem("email"); 
-      setEmail(storedEmail);
-    }, []);
+  const [email, setEmail] = useState("");
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("email");
+    setEmail(storedEmail);
+  }, []);
 
   const capture = async () => {
     if (!webcamRef.current) return;
@@ -114,8 +29,8 @@ export default function CameraCapture() {
       });
       const result = res.data.result;
 
-      setLastResult(result); // Update latest displayed result
-      setResultsList(prev => [...prev, result]); // Accumulate results
+      setLastResult(result);
+      setResultsList(prev => [...prev, result]);
     } catch (error) {
       console.error("Error capturing image:", error);
     }
@@ -136,10 +51,9 @@ export default function CameraCapture() {
 
   const handleToggleCapture = async () => {
     if (isCapturing) {
-      // Stopping capture: send results to backend
       try {
         await axios.post("http://localhost:3001/save_results", {
-          email, // replace with dynamic email if needed
+          email,
           results: resultsList,
         });
         console.log("Session data saved successfully!");
@@ -155,46 +69,69 @@ export default function CameraCapture() {
   };
 
   return (
-    <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
-      <div>
-        <Webcam
-          audio={false}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          width={640}
-          height={480}
-        />
+    <div className="container py-5 camera-page">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 className="text-primary fw-bold">🎥 Live Focus Analyzer</h2>
         <button
-          type="button"
-          onClick={handleToggleCapture}
-          style={{
-            marginTop: "10px",
-            padding: "10px 20px",
-            backgroundColor: isCapturing ? "#e74c3c" : "#2ecc71",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
+          className="btn btn-outline-primary"
+          onClick={() => navigate("/data")}
         >
-          {isCapturing ? "Stop Capturing" : "Start Capturing"}
+          Go to Data Page
         </button>
       </div>
 
-      <div style={{ maxWidth: "400px" }}>
-        <h3>Prediction Result:</h3>
-        {lastResult ? (
-          <ul>
-            <li>Eye Status: {lastResult.eye_status}</li>
-            <li>Focus: {lastResult.focus}</li>
-            <li>Head Pose: {lastResult.head_pose}</li>
-            <li>Left Eye: {lastResult.left_eye}</li>
-            <li>Right Eye: {lastResult.right_eye}</li>
-            <li>Yawn Status: {lastResult.yawn_status}</li>
-          </ul>
-        ) : (
-          <p>No data yet.</p>
-        )}
+      <div className="row">
+        <div className="col-md-7 mb-4">
+          <div className="card shadow-sm webcam-card">
+            <div className="card-body text-center">
+              <Webcam
+                audio={false}
+                ref={webcamRef}
+                screenshotFormat="image/jpeg"
+                className="img-fluid rounded webcam-feed"
+              />
+              <button
+                type="button"
+                onClick={handleToggleCapture}
+                className={`btn mt-3 ${isCapturing ? "btn-danger" : "btn-success"}`}
+              >
+                {isCapturing ? "⛔ Stop Capturing" : "▶️ Start Capturing"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-5">
+          <div className="card shadow-sm h-100 result-card">
+            <div className="card-body">
+              <h4 className="text-secondary mb-3">🧠 Prediction Result</h4>
+              {lastResult ? (
+                <ul className="list-group list-group-flush">
+                  <li className="list-group-item">
+                    <strong>Eye Status:</strong> {lastResult.eye_status}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>Focus:</strong> {lastResult.focus}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>Head Pose:</strong> {lastResult.head_pose}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>Left Eye:</strong> {lastResult.left_eye}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>Right Eye:</strong> {lastResult.right_eye}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>Yawn Status:</strong> {lastResult.yawn_status}
+                  </li>
+                </ul>
+              ) : (
+                <p className="text-muted">No data yet. Start capturing to view predictions.</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

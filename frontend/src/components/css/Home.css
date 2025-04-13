@@ -7,7 +7,7 @@
 
 header {
   text-align: center;
-  background: #007bff;
+  background: #ffffff;
   color: white;
   padding: 15px;
   border-radius: 5px;
@@ -34,8 +34,23 @@ code {
 }
 
 pre {
-  background: #f4f4f4;
-  padding: 10px;
-  border-radius: 5px;
   white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: monospace;
+  background-color: #f8f9fa;
+  border-left: 4px solid #0d6efd;
+}
+
+ul ul {
+  list-style-type: circle;
+}
+
+.btn-primary {
+  transition: all 0.3s ease-in-out;
+  border-radius: 50px;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
 }

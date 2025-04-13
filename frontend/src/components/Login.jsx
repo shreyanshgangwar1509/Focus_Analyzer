@@ -16,6 +16,8 @@ const Login = () => {
                 console.log(result);
                 if (result.data.message === "Success") {
                     alert('Login successful!');
+                    localStorage.setItem("email", email); // or result.data.email if it comes from the server
+
                     navigate('/home');
                 } else {
                     alert('Incorrect password! Please try again.');

@@ -3,7 +3,7 @@ import Home from './Home';
 import Login from './Login';
 import CameraCapture from './Model';
 import Register from './Register';
-
+import GraphPage from "./Graphpage";
 function App() {
 
   return (
@@ -15,6 +15,8 @@ function App() {
           <Route path="/login" element ={<Login/>} />
           <Route path="/home" element={<Home />} />
           <Route path='/concentration' element={<CameraCapture />}/>
+          <Route path='/data' element={<GraphPage />}/>
+          
         </Routes>
       </BrowserRouter>
     </div>

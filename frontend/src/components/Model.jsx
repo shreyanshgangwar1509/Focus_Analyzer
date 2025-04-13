@@ -96,6 +96,12 @@ export default function CameraCapture() {
   const [isCapturing, setIsCapturing] = useState(false);
   const [resultsList, setResultsList] = useState([]);
   const [lastResult, setLastResult] = useState(null);
+    const [email, setEmail] = useState("");
+  
+    useEffect(() => {
+      const storedEmail = localStorage.getItem("email"); 
+      setEmail(storedEmail);
+    }, []);
 
   const capture = async () => {
     if (!webcamRef.current) return;
@@ -133,7 +139,7 @@ export default function CameraCapture() {
       // Stopping capture: send results to backend
       try {
         await axios.post("http://localhost:3001/save_results", {
-          email: "abcd@gmail.com", // replace with dynamic email if needed
+          email, // replace with dynamic email if needed
           results: resultsList,
         });
         console.log("Session data saved successfully!");

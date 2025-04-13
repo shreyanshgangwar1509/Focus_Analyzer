@@ -5,7 +5,10 @@ import User from './models/User.model.js';
 import jwt from 'jsonwebtoken';
 import Session from './models/Session.model.js';
 
+// assumes your routes are prefixed correctly
+
 const app = express();
+
 app.use(express.json());
 app.use(cors());
 const JWT_SECRET = "HI";
@@ -36,7 +39,7 @@ app.post('/login', async (req, res) => {
 
     try {
         const user = await User.findOne({ email: email });
-        // console.log(user);
+        console.log(user);
 
         if (user) {
             if (user.password == password) {
@@ -61,7 +64,7 @@ app.post('/login', async (req, res) => {
 
 app.post("/save_results", async (req, res) => {
   const { email, results } = req.body;
-
+    
   if (!email || !results || !Array.isArray(results)) {
     return res.status(400).json({ error: "Email and results array required." });
   }
@@ -71,7 +74,7 @@ app.post("/save_results", async (req, res) => {
       email,
       results,
     });
-    // console.log(session);
+    console.log(session);
     await session.save();
     res.status(201).json({ message: "Session saved successfully." });
   } catch (err) {
@@ -81,16 +84,19 @@ app.post("/save_results", async (req, res) => {
 });
 
 
-app.get('/sessions', async (req, res) => {
+// ✅ Make the path match what React is calling
+app.get('/api/session/:email', async (req, res) => {
     try {
-        const sessions = await Session.find({ email: "abcd@gmail.com" });
-        console.log("request came ");
-        res.json({ sessions });
+        const email = req.params.email;
+        const session = await Session.findOne({ email }).sort({ startedAt: -1 });
+        console.log(`Request for session by: ${email}`);
+        res.json(session);
     } catch (err) {
-        // console.error('JWT verification error:', err);
-        res.status(403).json({ message: 'Forbidden: Invalid token' });
+        console.error('Session fetch error:', err);
+        res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 app.listen(3001, () => {
     console.log("Server listining on localhost - :3001");

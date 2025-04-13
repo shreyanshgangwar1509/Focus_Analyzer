@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid,
+  ResponsiveContainer,
 } from "recharts";
 
 const GraphPage = () => {
@@ -16,7 +23,8 @@ const GraphPage = () => {
   useEffect(() => {
     if (!email) return;
 
-    axios.get(`http://localhost:3001/api/session/${email}`)
+    axios
+      .get(`http://localhost:3001/api/session/${email}`)
       .then((res) => {
         const results = res.data.results || [];
         setData(results);
@@ -24,7 +32,7 @@ const GraphPage = () => {
       .catch((err) => console.error("Error fetching session data:", err));
   }, [email]);
 
-  // Count occurrences for each category
+  // Get count of each label per field
   const getCounts = () => {
     const counts = {
       focus: {},
@@ -42,42 +50,42 @@ const GraphPage = () => {
       });
     });
 
-    // Convert counts into format suitable for BarChart
-    const keys = new Set([
-      ...Object.keys(counts.focus),
-      ...Object.keys(counts.eye_status),
-      ...Object.keys(counts.yawn_status),
-      ...Object.keys(counts.head_pose),
-    ]);
-
-    return Array.from(keys).map((key) => ({
-      status: key,
-      Focus: counts.focus[key] || 0,
-      Eye: counts.eye_status[key] || 0,
-      Yawn: counts.yawn_status[key] || 0,
-      Head: counts.head_pose[key] || 0,
-    }));
+    return counts;
   };
+
+  const counts = getCounts();
+
+  const renderBarChart = (title, categoryData, color) => (
+    <div style={{ marginBottom: "50px", maxWidth: "700px", margin: "0 auto" }}>
+      <h4 className="text-center mb-3">{title}</h4>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart
+          data={Object.entries(categoryData).map(([name, count]) => ({ name, count }))}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis allowDecimals={false} />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="count" fill={color} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+  
 
   return (
     <div className="container mt-5">
-      <h2 className="text-center text-primary mb-4">Session Summary (Bar Chart)</h2>
+      <h2 className="text-center text-primary mb-4">Session Summary</h2>
       {data.length === 0 ? (
         <p className="text-center">No session data found.</p>
       ) : (
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={getCounts()} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="status" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="Focus" fill="#0d6efd" />
-            <Bar dataKey="Eye" fill="#198754" />
-            <Bar dataKey="Yawn" fill="#dc3545" />
-            <Bar dataKey="Head" fill="#ffc107" />
-          </BarChart>
-        </ResponsiveContainer>
+        <>
+          {renderBarChart("Focus Status", counts.focus, "#0d6efd")}
+          {renderBarChart("Eye Status", counts.eye_status, "#198754")}
+          {renderBarChart("Yawn Status", counts.yawn_status, "#dc3545")}
+          {renderBarChart("Head Pose", counts.head_pose, "#ffc107")}
+        </>
       )}
     </div>
   );

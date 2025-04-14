@@ -5,7 +5,7 @@ import joblib
 import tensorflow as tf
 from tensorflow import keras
 
-# Load models and resources
+# Load models and encoders
 kmeans = joblib.load("kmeans_model.pkl")
 scaler = joblib.load("scaler.pkl")
 label_encoders = joblib.load("label_encoders.pkl")
@@ -15,12 +15,10 @@ except Exception as e:
     print("Error loading eye_model.h5:", e)
     eye_model = None
 
-print("Scaler mean:", scaler.mean_)
-print("KMeans centers:", kmeans.cluster_centers_)
-for key, le in label_encoders.items():
-    print(f"{key} classes:", le.classes_)
-
-eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
+# print("Scaler mean:", scaler.mean_)
+# print("KMeans centers:", kmeans.cluster_centers_)
+# for key, le in label_encoders.items():
+#     print(f"{key} classes:", le.classes_)
 
 # Mediapipe setup
 mp_face_mesh = mp.solutions.face_mesh
@@ -29,6 +27,8 @@ face_mesh = mp_face_mesh.FaceMesh(refine_landmarks=True)
 # Constants
 LEFT_EYE = [33, 160, 158, 133, 153, 144]
 RIGHT_EYE = [362, 385, 387, 263, 373, 380]
+LEFT_EYE_IRIS_BOX = [33, 133, 159, 145, 160, 144, 153, 154, 155]
+RIGHT_EYE_IRIS_BOX = [362, 263, 386, 374, 387, 373, 380, 381, 382]
 MOUTH_INDICES = [61, 67, 62, 66, 63, 65, 60, 64]
 NOSE_INDEX = 1
 LEFT_EYE_INDEX = 33
@@ -88,6 +88,14 @@ def predict_eye_direction(eye_image):
     label_index = np.argmax(prediction)
     return class_labels.get(label_index, "Unknown")
 
+def crop_eye(frame, landmarks, indices):
+    h, w = frame.shape[:2]
+    points = [(int(landmarks[idx].x * w), int(landmarks[idx].y * h)) for idx in indices]
+    x_coords, y_coords = zip(*points)
+    x1, y1 = max(min(x_coords) - 5, 0), max(min(y_coords) - 5, 0)
+    x2, y2 = min(max(x_coords) + 5, w), min(max(y_coords) + 5, h)
+    return frame[y1:y2, x1:x2]
+
 def predict_from_image(frame):
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = face_mesh.process(rgb_frame)
@@ -99,40 +107,47 @@ def predict_from_image(frame):
     head_status = "Unknown"
     focus_label = "Unknown"
 
-    eyes = eye_cascade.detectMultiScale(rgb_frame, scaleFactor=1.3, minNeighbors=5, minSize=(60, 60))
-    if len(eyes) >= 2:
-        eyes = sorted(eyes, key=lambda x: x[0])  # sort by x to separate left and right
-        (x1, y1, w1, h1), (x2, y2, w2, h2) = eyes[:2]
-        left_eye_pred = predict_eye_direction(frame[y1:y1+h1, x1:x1+w1])
-        right_eye_pred = predict_eye_direction(frame[y2:y2+h2, x2:x2+w2])
-
     if results.multi_face_landmarks:
         for face_landmarks in results.multi_face_landmarks:
-            landmarks = [(int(l.x * frame.shape[1]), int(l.y * frame.shape[0])) for l in face_landmarks.landmark]
+            landmarks = face_landmarks.landmark
+            img_h, img_w = frame.shape[:2]
+            pixel_landmarks = [(int(l.x * img_w), int(l.y * img_h)) for l in landmarks]
 
-            left_eye_points = get_eye_landmarks(face_landmarks.landmark, LEFT_EYE, frame.shape[1], frame.shape[0])
-            right_eye_points = get_eye_landmarks(face_landmarks.landmark, RIGHT_EYE, frame.shape[1], frame.shape[0])
+            # EAR Calculation
+            left_eye_points = get_eye_landmarks(landmarks, LEFT_EYE, img_w, img_h)
+            right_eye_points = get_eye_landmarks(landmarks, RIGHT_EYE, img_w, img_h)
             left_ear = calculate_ear(left_eye_points)
             right_ear = calculate_ear(right_eye_points)
             avg_ear = (left_ear + right_ear) / 2.0
 
-            if avg_ear > FULLY_OPEN_THRESHOLD:
-                eye_status = "Fully Opened"
-            elif avg_ear > HALF_OPEN_THRESHOLD:
-                eye_status = "Half Opened"
-            else:
-                eye_status = "Closed"
+            eye_status = (
+                "Fully Opened" if avg_ear > FULLY_OPEN_THRESHOLD
+                else "Half Opened" if avg_ear > HALF_OPEN_THRESHOLD
+                else "Closed"
+            )
 
-            mouth_points = np.array([landmarks[i] for i in MOUTH_INDICES])
+            # MAR Calculation
+            mouth_points = np.array([pixel_landmarks[i] for i in MOUTH_INDICES])
             mar = calculate_mar(mouth_points)
             yawn_status = "No Yawn" if mar > 0.65 else "Yawn"
 
-            head_status = detect_head_pose(landmarks)
+            # Head pose
+            head_status = detect_head_pose(pixel_landmarks)
 
+            # Crop eyes and predict direction
+            left_eye_img = crop_eye(frame, landmarks, LEFT_EYE_IRIS_BOX)
+            right_eye_img = crop_eye(frame, landmarks, RIGHT_EYE_IRIS_BOX)
+
+            if left_eye_img.size > 0:
+                left_eye_pred = predict_eye_direction(left_eye_img)
+            if right_eye_img.size > 0:
+                right_eye_pred = predict_eye_direction(right_eye_img)
+
+            # Focus prediction
             input_data = [[eye_status, left_eye_pred, right_eye_pred, yawn_status, head_status]]
             for i in range(len(input_data[0])):
-                input_data[0][i] = label_encoders[list(label_encoders.keys())[i]].transform([input_data[0][i]])[0]
-
+                key = list(label_encoders.keys())[i]
+                input_data[0][i] = label_encoders[key].transform([input_data[0][i]])[0]
             input_scaled = scaler.transform(input_data)
             focus_prediction = kmeans.predict(input_scaled)
             focus_label = cluster_labels.get(focus_prediction[0], "Unknown")

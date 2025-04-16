@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
-import Webcam from "react-webcam";
 import { useNavigate } from "react-router-dom";
+import Webcam from "react-webcam";
 import "./css/CameraCapture.css"; // Importing custom styles
 
 export default function CameraCapture() {
@@ -112,6 +112,9 @@ export default function CameraCapture() {
                   </li>
                   <li className="list-group-item">
                     <strong>Focus:</strong> {lastResult.focus}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>Focus(%):</strong> {lastResult.focus_percentage}
                   </li>
                   <li className="list-group-item">
                     <strong>Head Pose:</strong> {lastResult.head_pose}

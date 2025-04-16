@@ -6,11 +6,13 @@ import tensorflow as tf
 from tensorflow import keras
 
 # Load models and encoders
-kmeans = joblib.load("kmeans_model.pkl")
-scaler = joblib.load("scaler.pkl")
-label_encoders = joblib.load("label_encoders.pkl")
+
+scaler = joblib.load("./model/ann_scaler.pkl")
+label_encoders = joblib.load("./model/ann_label_encoders.pkl")
+
 try:
-    eye_model = keras.models.load_model("eye_model.h5")
+    model = keras.models.load_model("./model/ann_focus_model.h5")
+    eye_model = keras.models.load_model("./model/eye_model.h5")
 except Exception as e:
     print("Error loading eye_model.h5:", e)
     eye_model = None
@@ -39,11 +41,7 @@ class_labels = {
     2: "right_look",
     3: "left_look"
 }
-cluster_labels = {
-    2: "Mid - Focused",
-    0: "Non - Focused",
-    1: "Focused"
-}
+
 
 def calculate_ear(eye_landmarks):
     p1, p2, p3, p4, p5, p6 = eye_landmarks
@@ -73,7 +71,7 @@ def detect_head_pose(landmarks):
     elif nose[0] > right_eye[0] + 5:
         return "Left Look"
     elif nose[1] > eye_avg_y + 60:
-        return "Down Look"
+        return "Down_Look"
     return "Forward Look"
 
 def predict_eye_direction(eye_image):
@@ -157,8 +155,11 @@ def predict_from_image(frame):
                 key = list(label_encoders.keys())[i]
                 input_data[0][i] = label_encoders[key].transform([input_data[0][i]])[0]
             input_scaled = scaler.transform(input_data)
-            focus_prediction = kmeans.predict(input_scaled)
-            focus_label = cluster_labels.get(focus_prediction[0], "Unknown")
+
+            ann_probs = model.predict(input_scaled)[0]  # Softmax probabilities
+            focus_index = np.argmax(ann_probs)
+            focus_label = label_encoders['label'].inverse_transform([focus_index])[0]
+            focus_percentage = float(np.max(ann_probs) * 100)  
 
     return {
         "eye_status": eye_status,
@@ -166,5 +167,6 @@ def predict_from_image(frame):
         "right_eye": right_eye_pred,
         "yawn_status": yawn_status,
         "head_pose": head_status,
-        "focus": focus_label
+        "focus": focus_label,
+        "focus_percentage": round(focus_percentage, 2)
     }

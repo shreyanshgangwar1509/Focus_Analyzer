@@ -104,7 +104,7 @@ const HomePage = () => {
   <h2 className="h4 mb-3">Limitations</h2>
   <ul className="ps-0">
     {[
-      "Works based on the K-means clustering model.",
+      
       "Maintain a maximum distance of 35 cm from the camera.",
       "Designed for students and professionals working in front of a camera.",
       "Not suitable for individuals wearing spectacles.",

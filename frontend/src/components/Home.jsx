@@ -100,6 +100,25 @@ const HomePage = () => {
           <p><strong>Input size:</strong> 145x145x3</p>
         </div>
       </section>
+      <section className="mb-5">
+  <h2 className="h4 mb-3">Limitations</h2>
+  <ul className="ps-0">
+    {[
+      "Works based on the K-means clustering model.",
+      "Maintain a maximum distance of 35 cm from the camera.",
+      "Designed for students and professionals working in front of a camera.",
+      "Not suitable for individuals wearing spectacles.",
+      "Functions correctly only when a single person is visible on the screen.",
+    ].map((text, index) => (
+      <li key={index} className="d-flex align-items-start mb-2" style={{ listStyle: "none" }}>
+        <span className="me-2">⚠️</span>
+        <span>{text}</span>
+      </li>
+    ))}
+  </ul>
+</section>
+
+
     </div>
   );
 };

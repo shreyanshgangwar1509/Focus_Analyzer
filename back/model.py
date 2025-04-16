@@ -15,12 +15,7 @@ except Exception as e:
     print("Error loading eye_model.h5:", e)
     eye_model = None
 
-# print("Scaler mean:", scaler.mean_)
-# print("KMeans centers:", kmeans.cluster_centers_)
-# for key, le in label_encoders.items():
-#     print(f"{key} classes:", le.classes_)
 
-# Mediapipe setup
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(refine_landmarks=True)
 
@@ -96,7 +91,20 @@ def crop_eye(frame, landmarks, indices):
     x2, y2 = min(max(x_coords) + 5, w), min(max(y_coords) + 5, h)
     return frame[y1:y2, x1:x2]
 
+# CLAHE (Contrast Limited Adaptive Histogram Equalization)
+def adjust_contrast(image):
+    lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))  
+    cl = clahe.apply(l)
+
+    merged = cv2.merge((cl, a, b))
+    enhanced = cv2.cvtColor(merged, cv2.COLOR_LAB2BGR)
+    return enhanced
+
 def predict_from_image(frame):
+    frame = adjust_contrast(frame) 
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = face_mesh.process(rgb_frame)
 
@@ -105,7 +113,7 @@ def predict_from_image(frame):
     eye_status = "Unknown"
     yawn_status = "Unknown"
     head_status = "Unknown"
-    focus_label = "Unknown"
+    focus_label = "Uncaptured"
 
     if results.multi_face_landmarks:
         for face_landmarks in results.multi_face_landmarks:

@@ -1,20 +1,21 @@
 import cors from 'cors';
+import dotenv from 'dotenv';
 import express from 'express';
-import mongoose from 'mongoose';
-import User from './models/User.model.js';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import Session from './models/Session.model.js';
-
+import User from './models/User.model.js';
 // assumes your routes are prefixed correctly
-
+dotenv.config();
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 const JWT_SECRET = "HI";
 
+console.log(process.env.MONGO);
 
-mongoose.connect('mongodb://127.0.0.1:27017/focus_analyzer');
+await mongoose.connect(process.env.MONGO);
 
 app.post('/register',async  (req, res)=>{
     // To post / insert data into database
